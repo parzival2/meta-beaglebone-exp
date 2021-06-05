@@ -1,0 +1,66 @@
+From 0943db37edd64cdb5703c2fe360cd45413b448cc Mon Sep 17 00:00:00 2001
+From: Kalyan <r.kalyan.sreenivas@gmail.com>
+Date: Fri, 4 Jun 2021 14:56:06 +0000
+Subject: [PATCH] Modify waf scripts to use correct compiler
+
+Signed-off-by: Kalyan <r.kalyan.sreenivas@gmail.com>
+---
+ waftools/strip_on_install.py |  6 +++---
+ zcm/wscript                  | 15 ++++++++-------
+ 2 files changed, 11 insertions(+), 10 deletions(-)
+
+diff --git a/waftools/strip_on_install.py b/waftools/strip_on_install.py
+index 9990b81..eab7376 100644
+--- a/waftools/strip_on_install.py
++++ b/waftools/strip_on_install.py
+@@ -14,7 +14,7 @@ def copy_fun(self, src, tgt):
+         os.chmod(tgt, self.chmod)
+ 
+         if getattr(self.generator, 'link_task', None):
+-                if self.generator.link_task.outputs[0] in self.inputs:
+-                        self.generator.bld.cmd_and_log('strip %s' % tgt, quiet=Context.BOTH)
+-Build.inst.copy_fun = copy_fun
++                 if self.generator.link_task.outputs[0] in self.inputs:
++                         self.generator.bld.cmd_and_log('$STRIP %s' % tgt, quiet=Context.BOTH)
++# Build.inst.copy_fun = copy_fun
+ 
+diff --git a/zcm/wscript b/zcm/wscript
+index d9c6092..74daa2d 100644
+--- a/zcm/wscript
++++ b/zcm/wscript
+@@ -74,11 +74,11 @@ def build(ctx):
+         color  = "PINK",
+         after  = 'embed-tar-finish')
+ 
+-    ctx(rule   = rezip_arduino,
+-        source = 'zcm-embed.tar.gz',
+-        target = 'zcm-arduino.zip',
+-        color  = 'PINK',
+-        after  = 'embed-test')
++    # ctx(rule   = rezip_arduino,
++    #     source = 'zcm-embed.tar.gz',
++    #     target = 'zcm-arduino.zip',
++    #     color  = 'PINK',
++    #     after  = 'embed-test')
+ 
+     ctx.install_files('${PREFIX}/include/zcm',
+                       ['zcm.h', 'zcm_coretypes.h', 'transport.h', 'transport_registrar.h',
+@@ -161,7 +161,8 @@ def rezip_arduino(tsk):
+           'zip -r ' + tsk.outputs[0].abspath() + ' * > /dev/null'
+     ret = tsk.exec_command(cmd)
+     if ret != 0:
+-        raise WafError('Unable to generate zcm-embed zipped archive')
++    	pass
++        # raise WafError('Unable to generate zcm-embed zipped archive')
+ 
+     return 0
+ 
+@@ -171,7 +172,7 @@ def exec_test_embedded(tsk):
+     blddir =  os.path.dirname(src)
+     testdir = blddir+'/test-embed'
+     ret =  tsk.exec_command('rm -rf {0} && mkdir {0} && cd {0} && tar xf {1} && ' \
+-                            'cc -std=c89 -I. -DZCM_EMBEDDED -c zcm/*.c && ' \
++                            '$CC -std=c89 -I. -DZCM_EMBEDDED -c zcm/*.c && ' \
+                             'echo "embed passed" > {2}' \
+                             .format(testdir, src, tsk.outputs[0].abspath()))
+     if ret != 0:

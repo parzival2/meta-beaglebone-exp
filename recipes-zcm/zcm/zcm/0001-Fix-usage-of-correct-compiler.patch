@@ -1,0 +1,26 @@
+From 6b05ee200dbbda479e76ee328a2ab47838b85ccf Mon Sep 17 00:00:00 2001
+From: Kalyan <r.kalyan.sreenivas@gmail.com>
+Date: Fri, 4 Jun 2021 17:11:17 +0200
+Subject: [PATCH 1/1] Fix usage of correct compiler
+
+Signed-off-by: Kalyan <r.kalyan.sreenivas@gmail.com>
+---
+ zcm/wscript | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/zcm/wscript b/zcm/wscript
+index d9c6092..505f0ae 100644
+--- a/zcm/wscript
++++ b/zcm/wscript
+@@ -171,7 +171,7 @@ def exec_test_embedded(tsk):
+     blddir =  os.path.dirname(src)
+     testdir = blddir+'/test-embed'
+     ret =  tsk.exec_command('rm -rf {0} && mkdir {0} && cd {0} && tar xf {1} && ' \
+-                            'cc -std=c89 -I. -DZCM_EMBEDDED -c zcm/*.c && ' \
++                            '$CC -std=c89 -I. -DZCM_EMBEDDED -c zcm/*.c && ' \
+                             'echo "embed passed" > {2}' \
+                             .format(testdir, src, tsk.outputs[0].abspath()))
+     if ret != 0:
+-- 
+2.25.1
+
